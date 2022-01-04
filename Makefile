@@ -5,12 +5,12 @@ SUDO_FILE = /etc/pam.d/sudo
 PAM = auth       sufficient     $(LIBRARY_NAME)
 EXIST = $(shell grep -q -e "^$(PAM)" "$(SUDO_FILE)"; echo $$?)
 
-.PHONY: all enable disable
+.PHONY: all enable disable test test/%
 
 all: $(LIBRARY_NAME)
 
 $(LIBRARY_NAME): patch.py
-	python3 patch.py
+	python3 patch.py /usr/lib/pam/pam_tid.so.2 $(LIBRARY_NAME)
 	codesign --force -s - $(LIBRARY_NAME)
 
 install: $(LIBRARY_NAME)
@@ -27,3 +27,6 @@ ifeq ($(EXIST), 0)
 	sudo sed -i ".bak" -e "/^$(PAM)$$/d" "$(SUDO_FILE)"
 	sudo rm $(DESTINATION)/$(LIBRARY_NAME).$(VERSION)
 endif
+
+test:
+	@$(foreach file, $(wildcard test/*), python3 patch.py $(file) /dev/null;)

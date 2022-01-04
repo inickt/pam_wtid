@@ -1,6 +1,6 @@
+import argparse
 import re
 import subprocess
-import sys
 
 ARG_INSTR_X86_64 = bytes.fromhex("be 01 00 00 00")  # mov esi, 0x1
 PATCH_ARG_INSTR_X86_64 = bytes.fromhex("be 04 00 00 00")  # mov esi, 0x4
@@ -10,8 +10,6 @@ PATCH_ARG_INSTR_ARM64E = bytes.fromhex("81 00 80 52")  # mov w1, 0x4
 OBJDUMP_REGEX = r"^\s*(.+?)\s*{op}\s+_LAEvaluatePolicy$"
 OBJDUMP_REGEX_X86_64 = OBJDUMP_REGEX.format(op="callq")
 OBJDUMP_REGEX_ARM64E = OBJDUMP_REGEX.format(op="bl")
-
-FILE = "pam_wtid.so"
 
 
 def patch_arg(
@@ -47,13 +45,13 @@ def attempt_patch(
         print(f"Unable to find {arch} call instruction, skipping patch.")
 
 
-def patch(file):
-    print(f"Opening {file}")
-    with open(file, "rb") as f:
+def patch(input_file, output_file):
+    print(f"Opening {input_file}")
+    with open(input_file, "rb") as f:
         bin = f.read()
 
     objdump = subprocess.run(
-        ["objdump", "-macho", "--no-leading-addr", "-d", file],
+        ["objdump", "-macho", "--no-leading-addr", "-d", input_file],
         capture_output=True,
         text=True,
     )
@@ -80,11 +78,14 @@ def patch(file):
         PATCH_ARG_INSTR_ARM64E,
     )
     assert len(bin) == len(patched_bin)
-    print(f"Writing patch to {FILE}")
-    with open(FILE, "wb") as f:
+    print(f"Writing patch to {output_file}")
+    with open(output_file, "wb") as f:
         f.write(patched_bin)
 
 
 if __name__ == "__main__":
-    file = sys.argv[1] if len(sys.argv) > 1 else "/usr/lib/pam/pam_tid.so.2"
-    patch(file)
+    parser = argparse.ArgumentParser()
+    parser.add_argument("input")
+    parser.add_argument("output")
+    args = parser.parse_args()
+    patch(args.input, args.output)
