@@ -25,4 +25,5 @@ endif
 disable:
 ifeq ($(EXIST), 0)
 	sudo sed -i ".bak" -e "/^$(PAM)$$/d" "$(SUDO_FILE)"
+	sudo rm $(DESTINATION)/$(LIBRARY_NAME).$(VERSION)
 endif
