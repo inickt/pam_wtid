@@ -20,7 +20,7 @@ There are already a lot of really cool, open source PAM modules/utilities that a
 - [artginzburg/sudo-touchid](https://github.com/artginzburg/sudo-touchid) – Utility to automatically install Apple's native `pam_tid` PAM module
 - [Reflejo/pam-touchID](https://github.com/Reflejo/pam-touchID) – A Swift PAM module for adding Touch ID support
 - [biscuitehh/pam-watchid](https://github.com/biscuitehh/pam-watchid) - A Swift PAM module for adding watch unlocking support (forked from the above)
-- Apple's own [pam_tid](https://github.com/apple-open-source/macos/tree/master/pam_modules/modules/pam_tid), available in `/usr/lib/pam/pam_tid.so.2` for Touch ID authentication
+- Apple's own [pam_tid](https://github.com/apple-oss-distributions/pam_modules/tree/main/modules/pam_tid), available in `/usr/lib/pam/pam_tid.so.2` for Touch ID authentication
 
 When my computer is docked in clamshell mode, I can only use watch unlocking. But if I am on the go, I want to use Touch ID over watch unlocking since it is usually quicker. I used to use `pam-watchid`, but on my new 2021 16" MacBook Pro only watch support works. Doing a little debugging, it seems that the context/sandbox in which the PAM module is called does not correctly link back to the current user, and I was seeing error messages from the `LAPolicy` framework that no fingerprints are enrolled.
 
@@ -40,7 +40,7 @@ For our purposes, there are only 2 important policies used to determine how a us
 
 ## Patching
 
-Since the current Swift implementations had issues, I decided to see if Apple's own `pam_tid` had a similar problem. When reading through the [source](https://github.com/apple-open-source/macos/blob/master/pam_modules/modules/pam_tid/pam_tid.c), I noticed some interesting code that attempts to determine the user authenticating and whether or not they are in an Aqua session. I figured this is enough of a reason to try and recompile the PAM module with watch support added.
+Since the current Swift implementations had issues, I decided to see if Apple's own `pam_tid` had a similar problem. When reading through the [source](https://github.com/apple-oss-distributions/pam_modules/blob/main/modules/pam_tid/pam_tid.c), I noticed some interesting code that attempts to determine the user authenticating and whether or not they are in an Aqua session. I figured this is enough of a reason to try and recompile the PAM module with watch support added.
 
 I unfortunately was unable to compile the project, due to it depending on some internal headers I was not able to patch out easily. I also noticed that the call to `LAEvaluatePolicy` has an extra `options` dictionary argument, which is not available in the [public API](https://developer.apple.com/documentation/localauthentication/lacontext/1514176-evaluatepolicy).
 
