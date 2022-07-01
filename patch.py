@@ -51,7 +51,7 @@ def patch(input_file, output_file):
         bin = f.read()
 
     objdump = subprocess.run(
-        ["objdump", "-macho", "--no-leading-addr", "-d", input_file],
+        ["objdump", "--no-leading-addr", "-d", input_file],
         capture_output=True,
         text=True,
     )

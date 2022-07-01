@@ -5,9 +5,12 @@ SUDO_FILE = /etc/pam.d/sudo
 PAM = auth       sufficient     $(LIBRARY_NAME)
 EXIST = $(shell grep -q -e "^$(PAM)" "$(SUDO_FILE)"; echo $$?)
 
-.PHONY: all enable disable test test/%
+.PHONY: all clean enable disable test test/%
 
 all: $(LIBRARY_NAME)
+
+clean:
+	rm $(LIBRARY_NAME)
 
 $(LIBRARY_NAME): patch.py
 	python3 patch.py /usr/lib/pam/pam_tid.so.2 $(LIBRARY_NAME)
