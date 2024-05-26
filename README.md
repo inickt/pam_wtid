@@ -74,7 +74,7 @@ Since I couldn't compile this code easily and didn't particularly want to requir
 In the code, `LAEvaluatePolicy` is only called once. Using `objtool` we can dissassemble the `pam_tid` binary and search for this call:
 
 ```
-❯❯❯ objdump -macho -d /usr/lib/pam/pam_tid.so.2 | grep "_LAEvaluatePolicy$" -B 8       
+❯❯❯ objdump --macho -d /usr/lib/pam/pam_tid.so.2 | grep "_LAEvaluatePolicy$" -B 8       
     4e3d:    e8 a5 0f 00 00     callq   _LACreateNewContextWithACMContext
     4e42:    48 85 c0           testq   %rax, %rax
     4e45:    0f 84 34 01 00 00  je      0x4f7f

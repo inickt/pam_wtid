@@ -5,7 +5,7 @@ SUDO_FILE = /etc/pam.d/sudo
 PAM = auth       sufficient     $(LIBRARY_NAME)
 EXIST = $(shell grep -q -e "^$(PAM)" "$(SUDO_FILE)"; echo $$?)
 
-.PHONY: all clean enable disable test test/%
+.PHONY: all clean enable disable working test test/%
 
 all: $(LIBRARY_NAME)
 
@@ -23,12 +23,20 @@ install: $(LIBRARY_NAME)
 enable: install
 ifeq ($(EXIST), 1)
 	sudo sed -E -i ".bak" "1s/^(#.*)$$/\1\n$(PAM)/" "$(SUDO_FILE)"
+	$(MAKE) working || (echo "$(LIBRARY_NAME) is not working, rolling back..." && $(MAKE) disable)
 endif
 
 disable:
 ifeq ($(EXIST), 0)
 	sudo sed -i ".bak" -e "/^$(PAM)$$/d" "$(SUDO_FILE)"
 	sudo rm $(DESTINATION)/$(LIBRARY_NAME).$(VERSION)
+endif
+
+working:
+ifeq ($(EXIST), 0)
+	sudo -v -k && echo "$(LIBRARY_NAME) is working"
+else 
+	@echo "$(LIBRARY_NAME) is not installed"
 endif
 
 test:
